@@ -1,0 +1,8 @@
+Django>=4.2
+djangorestframework
+djangorestframework-simplejwt
+channels
+channels-redis
+psycopg2-binary       # jika pakai PostgreSQL
+python-dotenv         # optional, untuk .env
+Pillow                # jika butuh image processing

@@ -1,0 +1,77 @@
+import uuid
+import secrets
+from django.conf import settings
+from django.db import models
+from django.contrib.auth.models import AbstractUser
+
+
+def generate_class_token():
+    # token urlsafe cukup untuk join code
+    return secrets.token_urlsafe(6)
+
+class User(AbstractUser):
+    # username, email, password dari AbstractUser
+    is_teacher = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.username
+
+class Classroom(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    teacher = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="classrooms")
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    join_token = models.CharField(max_length=10, unique=True, default=generate_class_token)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def regenerate_token(self):
+        self.join_token = generate_class_token()
+        self.save()
+
+    def __str__(self):
+        return f"{self.title} ({self.teacher})"
+
+class Material(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name="materials")
+    title = models.CharField(max_length=255)
+    youtube_url = models.URLField(blank=True, null=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.title} - {self.classroom.title}"
+
+class Enrollment(models.Model):
+    user = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="enrollments")
+    classroom = models.ForeignKey(Classroom, on_delete=models.CASCADE, related_name="enrollments")
+    joined_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        unique_together = ("user", "classroom")
+
+class Submission(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name="submissions")
+    student = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="submissions")
+    file = models.FileField(upload_to="submissions/%Y/%m/%d/")
+    message = models.TextField(blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    graded = models.BooleanField(default=False)
+    grade = models.CharField(max_length=50, blank=True, null=True)
+
+    class Meta:
+        ordering = ["-created_at"]
+
+class ClassChatMessage(models.Model):
+    # messages within a material (per-material chat session)
+    material = models.ForeignKey(Material, on_delete=models.CASCADE, related_name="chat_messages")
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE)
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
+
+class DirectChatMessage(models.Model):
+    # user-to-user chat
+    sender = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="sent_direct_messages")
+    recipient = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, related_name="received_direct_messages")
+    content = models.TextField()
+    timestamp = models.DateTimeField(auto_now_add=True)
