@@ -11,11 +11,14 @@ def generate_class_token():
 
 
 class User(AbstractUser):
-    # username, email, password from AbstractUser
+    email = models.EmailField(unique=True)  # email wajib unik
     is_teacher = models.BooleanField(default=False)
 
+    USERNAME_FIELD = "email"
+    REQUIRED_FIELDS = ["username"]
+
     def __str__(self):
-        return self.username
+        return self.email
 
 
 class Classroom(models.Model):

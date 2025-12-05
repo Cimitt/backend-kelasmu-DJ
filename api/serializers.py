@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from django.contrib.auth import get_user_model
 from .models import (
     User,
     Classroom,
@@ -8,7 +9,6 @@ from .models import (
     ClassChatMessage,
     DirectChatMessage,
 )
-from django.contrib.auth import get_user_model
 
 UserModel = get_user_model()
 
@@ -20,17 +20,19 @@ class UserSerializer(serializers.ModelSerializer):
 
 
 class RegisterSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True)
-    is_teacher = serializers.BooleanField(default=False)
+    password = serializers.CharField(write_only=True)
 
     class Meta:
-        model = UserModel
-        fields = ("username", "email", "password", "is_teacher")
+        model = User
+        fields = ["username", "email", "password", "is_teacher"]
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = UserModel(**validated_data)
-        user.set_password(password)
+        user = User(
+            username=validated_data["username"],
+            email=validated_data["email"],
+            is_teacher=validated_data.get("is_teacher", False),
+        )
+        user.set_password(validated_data["password"])
         user.save()
         return user
 

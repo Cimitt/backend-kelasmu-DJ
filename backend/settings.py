@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-import environ  
+import environ
 
 BASE_DIR = Path(__file__).resolve().parent.parent
 
@@ -21,12 +21,12 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
-    #import app
+    # import app
     "rest_framework",
     "rest_framework.authtoken",
     "channels",
     "api",
-    "corsheaders",  
+    "corsheaders",
 ]
 
 MIDDLEWARE = [
@@ -87,7 +87,7 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# static 
+# static
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / env("STATIC_DIR")
 
@@ -101,5 +101,11 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
+CORS_ALLOWED_ORIGINS = [
+    "http://localhost:3000",  # sesuaikan port Nuxt
+]
+
 # cors
-CORS_ALLOW_ALL_ORIGINS = True
+CORS_ALLOW_ALL_ORIGINS = False
+CORS_ALLOW_CREDENTIALS = True
+

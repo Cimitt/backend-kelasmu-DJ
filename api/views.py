@@ -23,12 +23,23 @@ from .serializers import (
 )
 from .permissions import IsTeacher, IsTeacherOrReadOnly
 from django.contrib.auth import get_user_model
+from rest_framework.views import APIView
+from rest_framework.views import APIView
+from rest_framework.permissions import IsAuthenticated
+
+class MeView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        """
+        Endpoint untuk mengambil data user yang sedang login.
+        """
+        serializer = UserSerializer(request.user)
+        return Response(serializer.data)
+
+
 
 User = get_user_model()
-
-# register endpoint
-from rest_framework.views import APIView
-
 
 class RegisterView(APIView):
     permission_classes = [AllowAny]
