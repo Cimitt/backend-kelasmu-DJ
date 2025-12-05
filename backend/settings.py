@@ -1,31 +1,18 @@
 import os
 from pathlib import Path
 from datetime import timedelta
-import environ  # <-- ADD THIS
+import environ  
 
-# ---------------------------------------------------
-# LOAD ENV
-# ---------------------------------------------------
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-env = environ.Env(
-    DEBUG=(bool, False)
-)
+env = environ.Env(DEBUG=(bool, False))
 
-# baca file .env
+# environ
 environ.Env.read_env(os.path.join(BASE_DIR, ".env"))
-
-# ---------------------------------------------------
-# BASIC SETTINGS
-# ---------------------------------------------------
 
 DEBUG = env("DEBUG")
 SECRET_KEY = env("SECRET_KEY")
 ALLOWED_HOSTS = env("ALLOWED_HOSTS").split(",")
-
-# ---------------------------------------------------
-# APPLICATIONS
-# ---------------------------------------------------
 
 INSTALLED_APPS = [
     "django.contrib.admin",
@@ -34,16 +21,17 @@ INSTALLED_APPS = [
     "django.contrib.sessions",
     "django.contrib.messages",
     "django.contrib.staticfiles",
+    #import app
     "rest_framework",
     "rest_framework.authtoken",
     "channels",
     "api",
-    "corsheaders",  # penting untuk frontend Nuxt
+    "corsheaders",  
 ]
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
-    "corsheaders.middleware.CorsMiddleware",   # wajib di paling atas
+    "corsheaders.middleware.CorsMiddleware",  # cors
     "django.contrib.sessions.middleware.SessionMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -74,38 +62,23 @@ ASGI_APPLICATION = "backend.asgi.application"
 
 AUTH_USER_MODEL = "api.User"
 
-# ---------------------------------------------------
-# CHANNELS
-# ---------------------------------------------------
-
+# channel
 CHANNEL_LAYERS = {
     "default": {
         "BACKEND": "channels_redis.core.RedisChannelLayer",
-        "CONFIG": {
-            "hosts": [("127.0.0.1", 6379)]
-        },
+        "CONFIG": {"hosts": [("127.0.0.1", 6379)]},
     }
 }
 
-# ---------------------------------------------------
-# DATABASE via env
-# ---------------------------------------------------
+# db
+DATABASES = {"default": env.db("DATABASE_URL")}
 
-DATABASES = {
-    "default": env.db("DATABASE_URL")
-}
-
-# ---------------------------------------------------
-# DRF + JWT
-# ---------------------------------------------------
-
+# drf jwt
 REST_FRAMEWORK = {
     "DEFAULT_AUTHENTICATION_CLASSES": (
         "rest_framework_simplejwt.authentication.JWTAuthentication",
     ),
-    "DEFAULT_PERMISSION_CLASSES": (
-        "rest_framework.permissions.IsAuthenticated",
-    ),
+    "DEFAULT_PERMISSION_CLASSES": ("rest_framework.permissions.IsAuthenticated",),
 }
 
 SIMPLE_JWT = {
@@ -114,19 +87,12 @@ SIMPLE_JWT = {
     "AUTH_HEADER_TYPES": ("Bearer",),
 }
 
-# ---------------------------------------------------
-# STATIC & MEDIA from ENV
-# ---------------------------------------------------
-
+# static 
 STATIC_URL = "/static/"
 STATIC_ROOT = BASE_DIR / env("STATIC_DIR")
 
 MEDIA_URL = "/media/"
 MEDIA_ROOT = BASE_DIR / env("MEDIA_DIR")
-
-# ---------------------------------------------------
-# INTERNATIONALIZATION
-# ---------------------------------------------------
 
 LANGUAGE_CODE = "en-us"
 TIME_ZONE = "UTC"
@@ -135,7 +101,5 @@ USE_TZ = True
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
-# ---------------------------------------------------
-# CORS (Untuk Nuxt)
-# ---------------------------------------------------
+# cors
 CORS_ALLOW_ALL_ORIGINS = True

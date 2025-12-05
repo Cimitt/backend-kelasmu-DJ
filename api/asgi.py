@@ -7,11 +7,9 @@ from .routing import websocket_urlpatterns
 
 os.environ.setdefault("DJANGO_SETTINGS_MODULE", "project_name.settings")
 django.setup()
-application = ProtocolTypeRouter({
-    "http": get_asgi_application(),
-    "websocket": AuthMiddlewareStack(
-        URLRouter(
-            websocket_urlpatterns
-        )
-    )
-})
+application = ProtocolTypeRouter(
+    {
+        "http": get_asgi_application(),
+        "websocket": AuthMiddlewareStack(URLRouter(websocket_urlpatterns)),
+    }
+)

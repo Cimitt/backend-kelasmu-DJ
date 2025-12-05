@@ -3,35 +3,51 @@ from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated, AllowAny
 from django.shortcuts import get_object_or_404
-from .models import Classroom, Material, Enrollment, Submission, ClassChatMessage, DirectChatMessage
+from .models import (
+    Classroom,
+    Material,
+    Enrollment,
+    Submission,
+    ClassChatMessage,
+    DirectChatMessage,
+)
 from .serializers import (
-    ClassroomSerializer, MaterialSerializer, EnrollmentSerializer,
-    SubmissionSerializer, ClassChatMessageSerializer, DirectChatMessageSerializer,
-    RegisterSerializer, UserSerializer
+    ClassroomSerializer,
+    MaterialSerializer,
+    EnrollmentSerializer,
+    SubmissionSerializer,
+    ClassChatMessageSerializer,
+    DirectChatMessageSerializer,
+    RegisterSerializer,
+    UserSerializer,
 )
 from .permissions import IsTeacher, IsTeacherOrReadOnly
 from django.contrib.auth import get_user_model
 
 User = get_user_model()
 
-# Register endpoint
+# register endpoint
 from rest_framework.views import APIView
+
+
 class RegisterView(APIView):
     permission_classes = [AllowAny]
+
     def post(self, request):
         ser = RegisterSerializer(data=request.data)
         ser.is_valid(raise_exception=True)
         user = ser.save()
         return Response(UserSerializer(user).data, status=201)
 
-# Classroom viewset
+
+# classroom viewset
 class ClassroomViewSet(viewsets.ModelViewSet):
     queryset = Classroom.objects.all()
     serializer_class = ClassroomSerializer
     permission_classes = [IsAuthenticated, IsTeacherOrReadOnly]
 
     def perform_create(self, serializer):
-        # only teacher can create (permission ensures it)
+        # only teacher can create 
         serializer.save(teacher=self.request.user)
 
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
@@ -43,26 +59,32 @@ class ClassroomViewSet(viewsets.ModelViewSet):
         classroom = self.get_object()
         token = request.data.get("token")
         if not token:
-            return Response({"detail":"token required"}, status=400)
+            return Response({"detail": "token required"}, status=400)
         if token != classroom.join_token:
-            return Response({"detail":"invalid token"}, status=400)
+            return Response({"detail": "invalid token"}, status=400)
         Enrollment.objects.get_or_create(user=request.user, classroom=classroom)
-        return Response({"detail":"joined"}, status=200)
+        return Response({"detail": "joined"}, status=200)
 
-    @action(detail=False, methods=["post"], permission_classes=[IsAuthenticated, IsTeacher])
+    @action(
+        detail=False, methods=["post"], permission_classes=[IsAuthenticated, IsTeacher]
+    )
     def join_by_token(self, request):
         token = request.data.get("token")
         if not token:
-            return Response({"detail":"token required"}, status=400)
+            return Response({"detail": "token required"}, status=400)
         classroom = get_object_or_404(Classroom, join_token=token)
         Enrollment.objects.get_or_create(user=request.user, classroom=classroom)
-        return Response({"detail":"joined", "classroom": ClassroomSerializer(classroom).data})
+        return Response(
+            {"detail": "joined", "classroom": ClassroomSerializer(classroom).data}
+        )
 
-    @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsTeacher])
+    @action(
+        detail=True, methods=["post"], permission_classes=[IsAuthenticated, IsTeacher]
+    )
     def regenerate_token(self, request, pk=None):
         classroom = self.get_object()
         if classroom.teacher != request.user:
-            return Response({"detail":"not allowed"}, status=403)
+            return Response({"detail": "not allowed"}, status=403)
         classroom.regenerate_token()
         return Response({"join_token": classroom.join_token})
 
@@ -86,6 +108,7 @@ class MaterialViewSet(viewsets.ModelViewSet):
             raise PermissionError("only classroom teacher can add material")
         serializer.save()
 
+
 class SubmissionViewSet(viewsets.ModelViewSet):
     queryset = Submission.objects.all()
     serializer_class = SubmissionSerializer
@@ -99,9 +122,10 @@ class SubmissionViewSet(viewsets.ModelViewSet):
         # students see their submissions, teachers see per classroom
         user = self.request.user
         if user.is_teacher:
-            # teacher: submissions to their materials
+            # teacher submissions to their materials
             return qs.filter(material__classroom__teacher=user)
         return qs.filter(student=user)
+
 
 class ClassChatMessageViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelMixin):
     queryset = ClassChatMessage.objects.all()
@@ -118,6 +142,7 @@ class ClassChatMessageViewSet(viewsets.ReadOnlyModelViewSet, mixins.CreateModelM
             qs = qs.filter(material_id=material_id).order_by("timestamp")
         return qs
 
+
 class DirectChatViewSet(viewsets.ModelViewSet):
     queryset = DirectChatMessage.objects.all()
     serializer_class = DirectChatMessageSerializer
@@ -127,6 +152,8 @@ class DirectChatViewSet(viewsets.ModelViewSet):
         serializer.save(sender=self.request.user)
 
     def get_queryset(self):
-        # return messages where user is participant (either sender or recipient)
+        # return messages where user is participant
         user = self.request.user
-        return DirectChatMessage.objects.filter(models.Q(sender=user) | models.Q(recipient=user)).order_by("timestamp")
+        return DirectChatMessage.objects.filter(
+            models.Q(sender=user) | models.Q(recipient=user)
+        ).order_by("timestamp")

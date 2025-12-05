@@ -1,8 +1,12 @@
 from rest_framework.routers import DefaultRouter
 from django.urls import path, include
 from .views import (
-    ClassroomViewSet, MaterialViewSet, SubmissionViewSet,
-    ClassChatMessageViewSet, DirectChatViewSet, RegisterView
+    ClassroomViewSet,
+    MaterialViewSet,
+    SubmissionViewSet,
+    ClassChatMessageViewSet,
+    DirectChatViewSet,
+    RegisterView,
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 

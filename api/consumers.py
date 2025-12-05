@@ -6,9 +6,10 @@ from .models import Material, ClassChatMessage, DirectChatMessage
 
 User = get_user_model()
 
+
 class MaterialChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
-        self.material_id = self.scope['url_route']['kwargs']['material_id']
+        self.material_id = self.scope["url_route"]["kwargs"]["material_id"]
         self.room_group_name = f"material_{self.material_id}"
 
         # optionally check if user is enrolled in the class for security
@@ -39,23 +40,31 @@ class MaterialChatConsumer(AsyncWebsocketConsumer):
                 "message": message,
                 "sender": user.username,
                 "sender_id": user.id,
-            }
+            },
         )
 
     async def chat_message(self, event):
         # forward to WebSocket
-        await self.send(text_data=json.dumps({
-            "message": event["message"],
-            "sender": event["sender"],
-            "sender_id": event["sender_id"],
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "message": event["message"],
+                    "sender": event["sender"],
+                    "sender_id": event["sender_id"],
+                }
+            )
+        )
 
 
 class DirectChatConsumer(AsyncWebsocketConsumer):
     async def connect(self):
         # url contains other_user_id
-        self.other_user_id = self.scope['url_route']['kwargs']['other_user_id']
-        me = str(self.scope["user"].id) if self.scope["user"].is_authenticated else "anon"
+        self.other_user_id = self.scope["url_route"]["kwargs"]["other_user_id"]
+        me = (
+            str(self.scope["user"].id)
+            if self.scope["user"].is_authenticated
+            else "anon"
+        )
         # canonical room: smallerid_biggerid
         ids = sorted([me, str(self.other_user_id)])
         self.room_group_name = f"direct_{ids[0]}_{ids[1]}"
@@ -70,10 +79,12 @@ class DirectChatConsumer(AsyncWebsocketConsumer):
         message = data.get("message")
         user = self.scope["user"]
         if not user.is_authenticated:
-            await self.send(json.dumps({"error":"auth required"}))
+            await self.send(json.dumps({"error": "auth required"}))
             return
 
-        recipient = await database_sync_to_async(User.objects.get)(id=self.other_user_id)
+        recipient = await database_sync_to_async(User.objects.get)(
+            id=self.other_user_id
+        )
         await database_sync_to_async(DirectChatMessage.objects.create)(
             sender=user, recipient=recipient, content=message
         )
@@ -86,13 +97,17 @@ class DirectChatConsumer(AsyncWebsocketConsumer):
                 "sender": user.username,
                 "sender_id": user.id,
                 "recipient_id": recipient.id,
-            }
+            },
         )
 
     async def direct_message(self, event):
-        await self.send(text_data=json.dumps({
-            "message": event["message"],
-            "sender": event["sender"],
-            "sender_id": event["sender_id"],
-            "recipient_id": event["recipient_id"],
-        }))
+        await self.send(
+            text_data=json.dumps(
+                {
+                    "message": event["message"],
+                    "sender": event["sender"],
+                    "sender_id": event["sender_id"],
+                    "recipient_id": event["recipient_id"],
+                }
+            )
+        )
