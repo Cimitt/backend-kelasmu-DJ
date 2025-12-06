@@ -39,10 +39,19 @@ class RegisterSerializer(serializers.ModelSerializer):
 
 class ClassroomSerializer(serializers.ModelSerializer):
     teacher = UserSerializer(read_only=True)
+    student_count = serializers.IntegerField(source="enrollments.count", read_only=True)
 
     class Meta:
         model = Classroom
-        fields = ("id", "teacher", "title", "description", "join_token", "created_at")
+        fields = (
+            "id",
+            "teacher",
+            "title",
+            "description",
+            "join_token",
+            "created_at",
+            "student_count",
+        )
         read_only_fields = ("join_token",)
 
 
@@ -50,6 +59,13 @@ class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
         fields = ("id", "classroom", "title", "youtube_url", "created_at")
+
+
+class MaterialCreateSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Material
+        fields = ("id", "title", "youtube_url", "created_at")
+        read_only_fields = ("id", "created_at")
 
 
 class EnrollmentSerializer(serializers.ModelSerializer):

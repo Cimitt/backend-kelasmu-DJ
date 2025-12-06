@@ -10,6 +10,7 @@ from .views import (
 )
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import MeView
+from .views import CreateMaterialAutoView
 
 router = DefaultRouter()
 router.register("classrooms", ClassroomViewSet, basename="classroom")

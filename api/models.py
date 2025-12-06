@@ -11,6 +11,7 @@ def generate_class_token():
 
 
 class User(AbstractUser):
+    username = models.CharField(max_length=150, unique=False)
     email = models.EmailField(unique=True)  # email wajib unik
     is_teacher = models.BooleanField(default=False)
 
