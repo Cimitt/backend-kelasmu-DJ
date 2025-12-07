@@ -23,8 +23,8 @@
 ### Clone Repository
 
 ```bash
-git@github.com:KaramelDev/peprpus-app-backend.git
-cd perpus-app-backend
+git@github.com:Cimitt/backend-kelasmu-DJ.git
+cd backend-kelasmu-DJ
 ```
 
 ## Make Venv
@@ -60,3 +60,4 @@ python manage.py makemigrations
 python manage.py migrate
 python manage.py runserver
 ```
+
