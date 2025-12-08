@@ -1,8 +1,11 @@
-Django>=4.2
-djangorestframework
-djangorestframework-simplejwt
-channels
-channels-redis
-psycopg2-binary       # jika pakai PostgreSQL
-python-dotenv         # optional, untuk .env
-Pillow                # jika butuh image processing
+Django==5.2.9
+django-cors-headers==4.9.0
+django-environ==0.12.0
+djangorestframework==3.16.1
+djangorestframework_simplejwt==5.5.1
+black==25.11.0
+channels==4.3.2
+channels_redis==4.3.0
+psycopg2-binary==2.9.11
+PyJWT==2.10.1
+pillow==12.0.0

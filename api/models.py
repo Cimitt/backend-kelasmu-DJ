@@ -1,13 +1,14 @@
 import uuid
 import secrets
+import string
 from django.conf import settings
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 
 
-def generate_class_token():
-    # token urlsafe cukup untuk join code
-    return secrets.token_urlsafe(6)
+def generate_class_token(lenght = 6):
+    letters = string.ascii_uppercase
+    return ''.join(secrets.choice(letters) for _ in range(lenght))
 
 
 class User(AbstractUser):
