@@ -11,6 +11,7 @@ from .views import (
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 from .views import MeView
 from .views import CreateMaterialAutoView
+from .views import DirectChatWithUserView
 
 router = DefaultRouter()
 router.register("classrooms", ClassroomViewSet, basename="classroom")
@@ -25,4 +26,5 @@ urlpatterns = [
     path("auth/token/", TokenObtainPairView.as_view(), name="token_obtain_pair"),
     path("auth/token/refresh/", TokenRefreshView.as_view(), name="token_refresh"),
     path("users/me/", MeView.as_view(), name="me"),
+    path("direct-chat/user/<int:user_id>/", DirectChatWithUserView.as_view(), name="direct-chat-user"),
 ]

@@ -13,10 +13,12 @@ from .models import (
 UserModel = get_user_model()
 
 
+
+# user auth
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = UserModel
-        fields = ("id", "username", "email", "is_teacher")
+        fields = ("id", "username", "email", "is_teacher")  # tambah avatar jika ada
 
 
 class RegisterSerializer(serializers.ModelSerializer):
@@ -37,6 +39,7 @@ class RegisterSerializer(serializers.ModelSerializer):
         return user
 
 
+# classroom 
 class ClassroomSerializer(serializers.ModelSerializer):
     teacher = UserSerializer(read_only=True)
     student_count = serializers.IntegerField(source="enrollments.count", read_only=True)
@@ -58,16 +61,24 @@ class ClassroomSerializer(serializers.ModelSerializer):
 class MaterialSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
-        fields = ("id", "classroom", "title", "youtube_url", "created_at")
+        fields = (
+            "id",
+            "classroom",
+            "title",
+            "youtube_url",
+            "description",
+            "created_at",
+        )
 
 
 class MaterialCreateSerializer(serializers.ModelSerializer):
     class Meta:
         model = Material
-        fields = ("id", "title", "youtube_url", "created_at")
+        fields = ("id", "title", "youtube_url", "description", "created_at")
         read_only_fields = ("id", "created_at")
 
 
+# submission enrollment/joined
 class EnrollmentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Enrollment
@@ -93,6 +104,7 @@ class SubmissionSerializer(serializers.ModelSerializer):
         read_only_fields = ("student", "created_at")
 
 
+# chat
 class ClassChatMessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
 
@@ -103,9 +115,23 @@ class ClassChatMessageSerializer(serializers.ModelSerializer):
 
 class DirectChatMessageSerializer(serializers.ModelSerializer):
     sender = UserSerializer(read_only=True)
-    recipient = serializers.PrimaryKeyRelatedField(queryset=UserModel.objects.all())
+    recipient = UserSerializer(read_only=True)
 
     class Meta:
         model = DirectChatMessage
         fields = ("id", "sender", "recipient", "content", "timestamp")
         read_only_fields = ("sender", "timestamp")
+
+
+# list chat summary (sidebar)
+class DirectChatSummarySerializer(serializers.Serializer):
+    id = serializers.IntegerField()
+    username = serializers.CharField()
+    last_message = serializers.CharField()
+    time = serializers.DateTimeField()
+
+
+# detail chat dengan user tertentu
+class DirectChatRetrieveSerializer(serializers.Serializer):
+    user = serializers.DictField()
+    messages = DirectChatMessageSerializer(many=True)
